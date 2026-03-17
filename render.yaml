@@ -20,12 +20,10 @@ services:
         value: f72590a6cbmsh1d999020201f1cep1f3858jsn9e28811fe0e4
 
   # Frontend Static Site
-  - type: web
+  - type: static
     name: tcs-nqt-frontend
-    env: static
-    plan: free
     buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/dist
+    publishDir: frontend/dist
     envVars:
       - key: VITE_API_BASE_URL
         value: https://${tcs-nqt-backend.host}/api

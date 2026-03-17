@@ -22,13 +22,13 @@ services:
         placeholder: "Your Judge0 API Key (Optional)"
 
   # Frontend Static Site
-  - type: static
+  - type: web
     name: tcs-nqt-frontend
     env: static
     plan: free
     region: ohio
     buildCommand: cd frontend && npm install && npm run build
-    publishDir: frontend/dist
+    staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_BASE_URL
         fromService:

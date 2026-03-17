@@ -67,30 +67,40 @@ This is a production-ready, full-stack web application that simulates the TCS NQ
 
 ---
 
-## Deployment Instructions
+## 🚀 One-Click Deployment (Render Blueprint)
+
+I have included a `render.yaml` blueprint to make deployment extremely simple. This will set up both the **Backend** and **Frontend** in one go.
+
+### Steps:
+1.  Push your code to **GitHub**.
+2.  Go to your [Render Dashboard](https://dashboard.render.com).
+3.  Click **New +** and select **Blueprint**.
+4.  Connect your repository.
+5.  Render will automatically detect the `render.yaml` file. 
+6.  **Fill in the placeholders**:
+    - `MONGODB_URI`: Your MongoDB Atlas connection string.
+    - `JUDGE0_API_KEY`: Your RapidAPI key for coding execution.
+7.  Click **Apply**. Render will deploy the backend first, then the frontend, and automatically link them.
+
+---
+
+## 🛠️ Individual Manual Deployment
 
 ### 1. Database (MongoDB Atlas)
-- Create a new project and a free cluster.
-- Add your IP address to the Network Access whitelist.
-- Create a Database User.
-- Copy the Connection String.
+- Create a free cluster.
+- Whitelist `0.0.0.0/0` in Network Access.
+- Create a user and copy the connection string.
 
 ### 2. Backend (Render)
-- Link your GitHub repository.
-- Use the provided `render.yaml` blueprint for one-click setup.
-- Alternatively, create a new **Web Service**.
-- Select the `backend` directory.
-- Build Command: `npm install`
-- Start Command: `node server.js`
-- Set `NODE_ENV` to `production` to serve the frontend automatically from the backend.
-- Add all environment variables from your `.env` file to the "Environment" tab in Render settings.
+- **Service Type**: Web Service
+- **Build Command**: `cd backend && npm install`
+- **Start Command**: `node server.js`
+- **Env Vars**: `MONGODB_URI`, `JWT_SECRET`, `JUDGE0_API_KEY`, etc.
 
-### 3. Frontend (Vercel)
-- Link your GitHub repository.
-- Select the `frontend` directory.
-- Vercel will automatically detect Vite.
-- Set the `VITE_API_URL` environment variable if you changed the backend URL.
-- Deploy!
+### 3. Frontend (Netlify / Vercel)
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Env Vars**: Set `VITE_API_BASE_URL` to your Backend URL.
 
 ---
 

@@ -11,15 +11,13 @@ services:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        sync: false
-        placeholder: "Your MongoDB Atlas URI"
+        value: mongodb+srv://veera:veerasurya@cluster0.cxhtovi.mongodb.net/tcs-nqt
       - key: JWT_SECRET
         generateValue: true
       - key: JUDGE0_API_URL
         value: https://judge0-ce.p.sulu.sh
       - key: JUDGE0_API_KEY
-        sync: false
-        placeholder: "Your Judge0 API Key (Optional)"
+        value: f72590a6cbmsh1d999020201f1cep1f3858jsn9e28811fe0e4
 
   # Frontend Static Site
   - type: web

@@ -7,7 +7,7 @@ const questionSchema = new mongoose.Schema({
   section: { 
     type: String, 
     required: true,
-    enum: ['numerical', 'reasoning', 'verbal', 'programming_logic', 'coding']
+    enum: ['numerical', 'reasoning', 'verbal', 'advanced_quant_reasoning', 'coding']
   },
   difficulty: { type: String, enum: ['easy', 'medium', 'hard'], default: 'medium' },
   explanation: String,
@@ -22,7 +22,8 @@ const questionSchema = new mongoose.Schema({
     input: String,
     expected_output: String,
     is_hidden: { type: Boolean, default: false }
-  }]
+  }],
+  is_previous_nqt_question: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Question', questionSchema);

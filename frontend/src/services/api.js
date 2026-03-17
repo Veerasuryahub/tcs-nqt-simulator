@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
 });
 
 api.interceptors.request.use((config) => {
@@ -14,6 +14,9 @@ api.interceptors.request.use((config) => {
 
 export const examService = {
   getRandomQuestions: () => api.get('/questions/random'),
+  getActiveSubmission: () => api.get('/exam/active'),
+  startExam: () => api.post('/exam/start'),
+  saveProgress: (data) => api.post('/exam/save-progress', data),
   submitExam: (data) => api.post('/exam/submit', data),
   runCode: (codeData) => api.post('/exam/run-code', codeData),
   getHistory: () => api.get('/exam/history'),

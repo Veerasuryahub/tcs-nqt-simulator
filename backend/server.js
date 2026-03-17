@@ -9,7 +9,30 @@ const questionRoutes = require('./routes/questions');
 const examRoutes = require('./routes/exam');
 const adminRoutes = require('./routes/admin');
 
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+const hpp = require('hpp');
+const compression = require('compression');
+const morgan = require('morgan');
+
 const app = express();
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+app.use(compression());
+// Security Middleware
+app.use(helmet()); 
+app.use(mongoSanitize());
+app.use(hpp());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
+app.use('/api/', limiter);
 
 // Middleware
 app.use(cors());
@@ -24,7 +47,7 @@ app.use('/api/admin', adminRoutes);
 // Serve Static Frontend in Production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/dist')));
-  app.get('*', (req, res) => {
+  app.use((req, res) => {
     res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
   });
 }

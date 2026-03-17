@@ -1,24 +1,10 @@
 const Question = require('../models/Question');
+const { getQuestionsForUser } = require('../utils/questionHelper');
 
 const getRandomQuestions = async (req, res) => {
   try {
-    const config = {
-      numerical: 10,
-      reasoning: 10,
-      verbal: 10,
-      programming_logic: 5,
-      coding: 2
-    };
-
-    const examQuestions = {};
-    
-    for (const section in config) {
-      examQuestions[section] = await Question.aggregate([
-        { $match: { section } },
-        { $sample: { size: config[section] } }
-      ]);
-    }
-
+    const userId = req.user.id;
+    const examQuestions = await getQuestionsForUser(userId);
     res.json(examQuestions);
   } catch (error) {
     res.status(500).json({ message: error.message });

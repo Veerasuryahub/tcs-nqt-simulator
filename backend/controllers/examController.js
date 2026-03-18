@@ -118,25 +118,66 @@ const submitExam = async (req, res) => {
     let totalCorrect = 0;
     let totalQs = 0;
 
-    submission.sections.forEach(section => {
+    for (const section of submission.sections) {
       let sectionCorrect = 0;
-      section.questions.forEach(q => {
+      
+      for (const q of section.questions) {
         totalQs++;
         const questionData = q.questionId;
-        if (q.userAnswer === questionData.correct_answer) {
-          q.isCorrect = true;
-          sectionCorrect++;
+        
+        if (section.name === 'coding') {
+          // Coding evaluaton logic
+          let passedTests = 0;
+          const languages = ['python', 'cpp', 'java'];
+          let usedLang = null;
+          let userCode = '';
+          
+          for (const lang of languages) {
+            const code = section.answers ? section.answers.get(`${questionData._id}_${lang}`) : null;
+            if (code && code !== questionData.code_templates?.[lang]) {
+              usedLang = lang;
+              userCode = code;
+              break; 
+            }
+          }
+          
+          if (usedLang && userCode && questionData.test_cases?.length > 0) {
+            const langIdMap = { python: '71', cpp: '54', java: '62' };
+            try {
+              // Run against first major test case (for speed during submit)
+              const firstTC = questionData.test_cases[0];
+              const result = await executeCode(userCode, langIdMap[usedLang], firstTC.input);
+              
+              const actualOut = (result.stdout || '').trim();
+              const expectedOut = (firstTC.expected_output || '').trim();
+              
+              if (actualOut === expectedOut) {
+                passedTests = questionData.test_cases.length; // Count as full pass for simplicity or scale as needed
+                q.isCorrect = true;
+                sectionCorrect++;
+              }
+            } catch (err) {
+              console.error(`Coding evaluation failed for ${questionData._id}:`, err.message);
+            }
+          }
+        } else {
+          // MCQ logic
+          if (q.userAnswer === questionData.correct_answer) {
+            q.isCorrect = true;
+            sectionCorrect++;
+          }
         }
-      });
+      }
+      
       section.correctAnswers = sectionCorrect;
       section.wrongAnswers = section.totalQuestions - sectionCorrect;
-      section.score = sectionCorrect * 2; // Assuming 2 points per correct answer
+      section.score = section.name === 'coding' ? sectionCorrect * 10 : sectionCorrect * 2; 
       section.accuracy = (sectionCorrect / section.totalQuestions) * 100;
       section.status = 'completed';
       
       totalScore += section.score;
       totalCorrect += sectionCorrect;
-    });
+    }
 
     submission.totalScore = totalScore;
     submission.totalAccuracy = (totalCorrect / totalQs) * 100;

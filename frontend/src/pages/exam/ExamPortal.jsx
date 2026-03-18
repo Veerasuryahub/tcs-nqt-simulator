@@ -20,10 +20,9 @@ const ExamPortal = () => {
   const [submitting, setSubmitting] = useState(false);
   
   // Coding states
-  const [code, setCode] = useState('');
-  const [languageId, setLanguageId] = useState('71'); // Python (3.8.1)
   const [codeOutput, setCodeOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
+  const [languageId, setLanguageId] = useState('71'); // Default Python
   
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -203,6 +202,15 @@ const ExamPortal = () => {
     setAnswers({ ...answers, [qId]: answer });
   };
 
+  const getLangKey = (id) => {
+    switch(id) {
+      case '71': return 'python';
+      case '54': return 'cpp';
+      case '62': return 'java';
+      default: return 'python';
+    }
+  };
+
   const toggleMarkReview = (qId) => {
     setMarkedForReview({ ...markedForReview, [qId]: !markedForReview[qId] });
   };
@@ -212,8 +220,11 @@ const ExamPortal = () => {
     try {
       const currentQ = questions[currentSection.id][currentIndex];
       const stdin = currentQ.test_cases?.[0]?.input || '';
+      const langKey = getLangKey(languageId);
+      const answerKey = `${currentQ._id}_${langKey}`;
+      const sourceCode = answers[answerKey] || currentQ.code_templates?.[langKey] || '';
       const res = await examService.runCode({ 
-        source_code: code, 
+        source_code: sourceCode, 
         language_id: languageId, 
         stdin 
       });
@@ -366,10 +377,10 @@ const ExamPortal = () => {
                   <div className="flex-1 bg-[#1e1e1e]">
                     <Editor
                       height="100%"
-                      language={languageId === '71' ? 'python' : languageId === '54' ? 'cpp' : 'java'}
-                      value={code || currentQuestion.code_templates?.[languageId === '71' ? 'python' : languageId === '54' ? 'cpp' : 'java'] || ''}
+                      language={getLangKey(languageId)}
+                      value={answers[`${currentQuestion._id}_${getLangKey(languageId)}`] || currentQuestion.code_templates?.[getLangKey(languageId)] || ''}
                       theme="vs-dark"
-                      onChange={(val) => setCode(val)}
+                      onChange={(val) => handleAnswerChange(`${currentQuestion._id}_${getLangKey(languageId)}`, val)}
                       options={{
                         fontSize: 18,
                         fontFamily: 'JetBrains Mono, Menlo, monospace',
@@ -474,7 +485,17 @@ const ExamPortal = () => {
                <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progress Metrics</span>
-                    <span className="text-xs font-bold text-indigo-600">{(Object.keys(answers).length / questions[currentSection.id].length * 100).toFixed(0)}%</span>
+                    <span className="text-xs font-bold text-indigo-600">
+                      {(
+                        questions[currentSection.id]?.filter(q => {
+                          if (currentSection.id === 'coding') {
+                            return answers[`${q._id}_python`] || answers[`${q._id}_cpp`] || answers[`${q._id}_java`];
+                          }
+                          return !!answers[q._id];
+                        }).length / 
+                        questions[currentSection.id]?.length * 100
+                      ).toFixed(0)}%
+                    </span>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                      <div className="flex items-center gap-3">

@@ -28,13 +28,17 @@ const getActiveSubmission = async (req, res) => {
 const startExam = async (req, res) => {
   try {
     const userId = req.user.id;
+    const { initialSection, isPractice } = req.body;
     const questions = await getQuestionsForUser(userId);
 
-    const sectionsData = Object.keys(questions).map(sectionName => ({
+    const startSec = initialSection || 'verbal';
+    const filteredQuestions = isPractice ? { [startSec]: questions[startSec] } : questions;
+
+    const sectionsData = Object.keys(filteredQuestions).map(sectionName => ({
       name: sectionName,
-      totalQuestions: questions[sectionName].length,
-      status: sectionName === 'verbal' ? 'ongoing' : 'pending',
-      questions: questions[sectionName].map(q => ({
+      totalQuestions: filteredQuestions[sectionName].length,
+      status: sectionName === startSec ? 'ongoing' : 'pending',
+      questions: filteredQuestions[sectionName].map(q => ({
         questionId: q._id,
         userAnswer: null,
         isCorrect: false
@@ -43,8 +47,9 @@ const startExam = async (req, res) => {
 
     const submission = new Submission({
       userId,
+      testName: isPractice ? `Practice: ${startSec.toUpperCase()}` : 'TCS NQT Full Mock Test',
       sections: sectionsData,
-      currentSection: 'verbal',
+      currentSection: startSec,
       status: 'ongoing'
     });
 

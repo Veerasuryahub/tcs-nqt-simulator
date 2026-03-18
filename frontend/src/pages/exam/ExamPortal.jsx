@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { examService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { EXAM_SECTIONS } from '../../constants/sections';
@@ -25,14 +25,23 @@ const ExamPortal = () => {
   const [languageId, setLanguageId] = useState('71'); // Default Python
   
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const timerRef = useRef(null);
   const autoSaveRef = useRef(null);
 
+  const queryParams = new URLSearchParams(location.search);
+  const startSectionId = queryParams.get('section');
+  const isPractice = queryParams.get('practice') === 'true';
+
   const currentSection = EXAM_SECTIONS[currentSectionIndex];
 
   useEffect(() => {
-    checkActiveSession();
+    if (startSectionId) {
+      initExam(startSectionId, isPractice);
+    } else {
+      checkActiveSession();
+    }
     return () => {
       clearInterval(timerRef.current);
       clearInterval(autoSaveRef.current);
@@ -92,20 +101,23 @@ const ExamPortal = () => {
     }
   };
 
-  const initExam = async () => {
+  const initExam = async (sectionId = null, practice = false) => {
     try {
-      const sRes = await examService.startExam();
+      setLoading(true);
+      const sRes = await examService.startExam({ initialSection: sectionId, isPractice: practice });
       const sub = sRes.data;
       setSubmissionId(sub._id);
       
-      // Reconstruct questions map from the backend response
       const restoredQuestions = {};
       sub.sections.forEach(s => {
         restoredQuestions[s.name] = s.questions.map(q => q.questionId);
       });
       setQuestions(restoredQuestions);
       
-      setTimeLeft(EXAM_SECTIONS[0].duration);
+      const secIndex = EXAM_SECTIONS.findIndex(s => s.id === sub.currentSection);
+      setCurrentSectionIndex(secIndex !== -1 ? secIndex : 0);
+      
+      setTimeLeft(EXAM_SECTIONS[secIndex !== -1 ? secIndex : 0].duration);
       setTotalTimeSpent(0);
       startTimer();
       startAutoSave();
@@ -113,6 +125,7 @@ const ExamPortal = () => {
     } catch (err) {
       console.error(err);
       alert('Failed to initialize exam. Please refresh.');
+      setLoading(false);
     }
   };
 

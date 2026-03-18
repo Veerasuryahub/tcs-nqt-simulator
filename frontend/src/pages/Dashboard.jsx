@@ -202,13 +202,14 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 gap-4">
               {[
-                { name: 'Numerical', icon: '123', color: 'bg-orange-50 text-orange-600 border-orange-100' },
-                { name: 'Reasoning', icon: '(?!)', color: 'bg-purple-50 text-purple-600 border-purple-100' },
-                { name: 'Verbal', icon: '"Aa"', color: 'bg-blue-50 text-blue-600 border-blue-100' },
-                { name: 'Coding', icon: '</>', color: 'bg-slate-900 text-white border-slate-900' }
+                { name: 'Numerical', id: 'numerical', icon: '123', color: 'bg-orange-50 text-orange-600 border-orange-100' },
+                { name: 'Reasoning', id: 'reasoning', icon: '(?!)', color: 'bg-purple-50 text-purple-600 border-purple-100' },
+                { name: 'Verbal', id: 'verbal', icon: '"Aa"', color: 'bg-blue-50 text-blue-600 border-blue-100' },
+                { name: 'Coding', id: 'coding', icon: '</>', color: 'bg-slate-900 text-white border-slate-900' }
               ].map((section, idx) => (
-                <button 
+                <Link 
                   key={section.name} 
+                  to={`/exam?section=${section.id}&practice=true`}
                   className={`p-5 rounded-2xl border flex items-center justify-between hover:scale-[1.02] active:scale-95 transition-all text-left shadow-sm ${section.color}`}
                 >
                   <div className="flex items-center gap-4">
@@ -216,7 +217,7 @@ const Dashboard = () => {
                     <span className="font-bold text-lg">{section.name} Ability</span>
                   </div>
                   <ChevronRight size={20} className="stroke-[3]" />
-                </button>
+                </Link>
               ))}
             </div>
 

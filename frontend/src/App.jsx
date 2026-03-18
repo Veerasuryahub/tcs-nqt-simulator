@@ -8,16 +8,17 @@ import ExamPortal from './pages/exam/ExamPortal';
 import Results from './pages/exam/Results';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Leaderboard from './pages/Leaderboard';
+import LoadingScreen from './components/common/LoadingScreen';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <LoadingScreen message="Checking authentication status..." />;
   return user ? children : <Navigate to="/login" />;
 };
 
 const AdminRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <LoadingScreen message="Verifying administrative access..." />;
   return user && user.role === 'admin' ? children : <Navigate to="/dashboard" />;
 };
 
